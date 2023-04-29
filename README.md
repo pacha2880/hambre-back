@@ -17,7 +17,7 @@ A continuación, se proporciona una instrucción adicional para levantar la base
 
 1. Asegúrese de tener instalado Docker Compose en su sistema.
 2. Abra una terminal en la raíz del proyecto.
-3. Ejecute `docker-compose up` para iniciar un contenedor de Docker que ejecute una instancia de PostgreSQL.
+3. Ejecute `docker-compose up` para iniciar un contenedor de Docker que ejecute una instancia de MariaDB.
 4. Una vez que el contenedor esté en ejecución, puede ejecutar la aplicación utilizando las instrucciones proporcionadas en la sección "Instrucciones para ejecutar el proyecto". 
 
 Es importante destacar que `docker-compose` leerá el archivo `docker-compose.yaml` ubicado en la raíz del proyecto para crear y configurar el contenedor de la base de datos. Asegúrese de que la información de la base de datos en `app/config.py` coincida con la configuración de `docker-compose.yml`.
