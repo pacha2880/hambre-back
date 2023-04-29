@@ -1,6 +1,6 @@
-from flask import jsonify
+from flask import jsonify, request
 from app import app
-from app.models import Dish, Restaurant, Session
+from app.models import Category, Dish, Restaurant, Session, User
 from app.models import db
 
 
@@ -57,3 +57,47 @@ def next_restaurant(session_id):
         db.session.commit()
     restaurant = session.next_unrelated_restaurant()
     return jsonify(restaurant.get_data())
+
+@app.route('/users', methods=['POST'])
+def create_user():
+    username = request.json.get('username')
+    if not username:
+        return jsonify({'error': 'Username is required'}), 400
+    
+    if User.query.filter_by(username=username).first():
+        return jsonify({'error': 'Username already exists'}), 400
+    
+    user = User(username=username)
+    db.session.add(user)
+    db.session.commit()
+    
+    return jsonify({'message': 'User created successfully'}), 201
+
+@app.route('/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return jsonify(user.get_data())
+
+@app.route('/dishes/<int:dish_id>/like', methods=['POST'])
+def like_dish(dish_id):
+    dish = Dish.query.get_or_404(dish_id)
+    if dish.like(username=request.json.get('username')):
+        db.session.commit()
+        return jsonify({'message': 'Dish liked successfully'}), 200
+    else:
+        return jsonify({'error': 'Dish already liked'}), 400
+    
+@app.route('/dishes/<int:dish_id>/comment', methods=['POST'])
+def comment_dish(dish_id):
+    dish = Dish.query.get_or_404(dish_id)
+    dish.comment(username=request.json.get('username'), comment=request.json.get('comment'))
+    db.session.commit()
+    return jsonify({'message': 'Dish commented successfully'}), 200
+
+@app.route('/categories', methods=['GET'])
+def get_categories():
+    categories = Category.query.all()
+    output = []
+    for category in categories:
+        output.append(category.get_data(with_dishes=False, with_restaurants=False))
+    return jsonify(output)
