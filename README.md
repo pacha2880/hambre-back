@@ -28,14 +28,11 @@ La API tiene los siguientes endpoints:
 
 - `/dishes`: devuelve una lista de todos los platos en la base de datos.
 - `/dishes/<int:id>`: devuelve un solo plato con el ID proporcionado.
-- `/dishes/<int:dish_id>/like`: agrega un "me gusta" al plato con el ID proporcionado.
-- `/dishes/<int:dish_id>/comment`: agrega un comentario al plato con el ID proporcionado.
 - `/restaurants`: devuelve una lista de todos los restaurantes en la base de datos.
 - `/restaurants/<int:id>`: devuelve un solo restaurante con el ID proporcionado.
 - `/restaurants/<int:id>/dishes`: devuelve una lista de todos los platos en el restaurante con el ID proporcionado.
 - `/sessions/<int:session_id>/next_dish`: devuelve el siguiente plato recomendado para la sesión proporcionada.
 - `/sessions/<int:session_id>/next_restaurant`: devuelve el siguiente restaurante recomendado para la sesión proporcionada.
-- `/users`: crea un nuevo usuario.
 - `/users/<int:user_id>`: devuelve un solo usuario con el ID proporcionado.
 - `/categories`: devuelve una lista de todas las categorías en la base de datos.
 
