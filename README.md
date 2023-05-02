@@ -1,47 +1,38 @@
-## Descripción del Proyecto
+## Project Description
 
-Este proyecto es una API para una aplicación de recomendación de restaurantes y platos de comida. La API se construyó utilizando Flask y SQLAlchemy, y proporciona endpoints para obtener información sobre restaurantes y platos, así como para recomendar nuevos platos y restaurantes.
+This project is an API for a restaurant and dish recommendation application. The API is built using Flask and SQLAlchemy, and provides endpoints to get information about restaurants and dishes, as well as to recommend new dishes and restaurants.
 
-## Instrucciones para ejecutar el proyecto
+The project is fully containerized with Docker, meaning that you can run it without having to worry about any dependencies, as long as you have Docker installed on your system.
 
-Siga estos pasos para ejecutar la aplicación:
+## Instructions to Run the Project
 
-1. Cree un entorno virtual con `virtualenv env`.
-2. Active el entorno virtual con `source env/bin/activate`.
-3. Instale las dependencias del proyecto con `pip install -r requirements.txt`.
-4. Ejecute la aplicación con `flask run`.
+Follow these steps to run the application:
 
-A continuación, se proporciona una instrucción adicional para levantar la base de datos necesaria para la aplicación utilizando `docker-compose`.
+1. Clone the repository to your local machine.
+2. Open a terminal window and navigate to the project directory.
+3. Run `docker-compose up` to start a Docker container running an instance of MariaDB and the Flask application.
+4. Once the container is up and running, you can access the application by visiting `http://localhost:5000` in your web browser.
 
-## Levantar la base de datos con Docker Compose
+## API Documentation
 
-1. Asegúrese de tener instalado Docker Compose en su sistema.
-2. Abra una terminal en la raíz del proyecto.
-3. Ejecute `docker-compose up` para iniciar un contenedor de Docker que ejecute una instancia de MariaDB.
-4. Una vez que el contenedor esté en ejecución, puede ejecutar la aplicación utilizando las instrucciones proporcionadas en la sección "Instrucciones para ejecutar el proyecto". 
+The API has the following endpoints:
 
-Es importante destacar que `docker-compose` leerá el archivo `docker-compose.yaml` ubicado en la raíz del proyecto para crear y configurar el contenedor de la base de datos. Asegúrese de que la información de la base de datos en `app/config.py` coincida con la configuración de `docker-compose.yml`.
+- `/dishes`: returns a list of all dishes in the database.
+- `/dishes/<int:id>`: returns a single dish with the provided ID.
+- `/restaurants`: returns a list of all restaurants in the database.
+- `/restaurants/<int:id>`: returns a single restaurant with the provided ID.
+- `/restaurants/<int:id>/dishes`: returns a list of all dishes at the restaurant with the provided ID.
+- `/sessions/<int:session_id>/next_dish`: returns the next recommended dish for the provided session.
+- `/sessions/<int:session_id>/next_restaurant`: returns the next recommended restaurant for the provided session.
+- `/users/<int:user_id>`: returns a single user with the provided ID.
+- `/categories`: returns a list of all categories in the database.
 
-## Documentación de la API
+To call any of these endpoints, make a GET request to the corresponding URL. The `/sessions/<int:session_id>/next_dish` and `/sessions/<int:session_id>/next_restaurant` endpoints also support automatic session creation if a session ID that does not exist in the database is provided.
 
-La API tiene los siguientes endpoints:
+The following endpoints also accept POST requests:
 
-- `/dishes`: devuelve una lista de todos los platos en la base de datos.
-- `/dishes/<int:id>`: devuelve un solo plato con el ID proporcionado.
-- `/restaurants`: devuelve una lista de todos los restaurantes en la base de datos.
-- `/restaurants/<int:id>`: devuelve un solo restaurante con el ID proporcionado.
-- `/restaurants/<int:id>/dishes`: devuelve una lista de todos los platos en el restaurante con el ID proporcionado.
-- `/sessions/<int:session_id>/next_dish`: devuelve el siguiente plato recomendado para la sesión proporcionada.
-- `/sessions/<int:session_id>/next_restaurant`: devuelve el siguiente restaurante recomendado para la sesión proporcionada.
-- `/users/<int:user_id>`: devuelve un solo usuario con el ID proporcionado.
-- `/categories`: devuelve una lista de todas las categorías en la base de datos.
+- `/users`: creates a new user with a provided username in JSON format. Returns a message with a 201 response status if the user was successfully created.
+- `/dishes/<int:dish_id>/like`: adds a "like" to the dish with the provided ID. A username must be provided in JSON format in the request to identify the user who likes the dish. Returns a message with a 200 response status if the like was successfully added.
+- `/dishes/<int:dish_id>/comment`: adds a comment to the dish with the provided ID. A username and comment must be provided in JSON format in the request. Returns a message with a 200 response status if the comment was successfully added.
 
-Para llamar a cualquiera de estos endpoints, haga una solicitud GET a la URL correspondiente. Los endpoints `/sessions/<int:session_id>/next_dish` y `/sessions/<int:session_id>/next_restaurant` también admiten creación automática de sesión si se proporciona un ID de sesión que no existe en la base de datos.
-
-Los siguientes endpoints también aceptan solicitudes POST:
-
-- `/users`: crea un nuevo usuario con un nombre de usuario proporcionado en formato JSON. Retorna un mensaje con un estado de respuesta 201 si se creó exitosamente el usuario.
-- `/dishes/<int:dish_id>/like`: agrega un "me gusta" al plato con el ID proporcionado. Se debe proporcionar un nombre de usuario en formato JSON en la solicitud para identificar al usuario que le gusta el plato. Retorna un mensaje con un estado de respuesta 200 si se agregó el "me gusta" exitosamente y un estado de respuesta 400 si el plato ya tiene un "me gusta" de ese usuario.
-- `/dishes/<int:dish_id>/comment`: agrega un comentario al plato con el ID proporcionado. Se debe proporcionar un nombre de usuario y un comentario en formato JSON en la solicitud. Retorna un mensaje con un estado de respuesta 200 si se agregó el comentario exitosamente. 
-
-Todas las solicitudes POST deben incluir un encabezado de tipo de contenido `application/json`.
+All POST requests must include a `Content-Type` header of `application/json`.

@@ -1,18 +1,25 @@
 version: '3.8'
+
 services:
   mariadb:
     container_name: mariadb
-    hostname: mariadb
     image: mariadb:latest
+    # restart: always
     environment:
-      MARIADB_USER: root
-      MARIADB_ROOT_PASSWORD: root
-      MARIADB_DATABASE: hambre
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: hambre
     ports:
-      - 3306:3306
-    command: [
-      'mysqld', 
-      '--character-set-server=utf8mb4', 
-      '--collation-server=utf8mb4_unicode_ci', 
-      '--skip-character-set-client-handshake'
-    ]
+      - "3306:3306"
+
+  flask_app:
+    container_name: flask_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    depends_on:
+      - mariadb

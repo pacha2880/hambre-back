@@ -1,7 +1,10 @@
 import base64
+import math
 from random import choice
+from flask import g
 from flask_sqlalchemy import SQLAlchemy
 from app import app
+from geopy.distance import geodesic as GD
 
 db = SQLAlchemy(app)
 
@@ -81,7 +84,7 @@ class Restaurant(db.Model):
     description = db.Column(db.String(100), nullable=False)
     latitude = db.Column(db.Float(precision=15), nullable=False)
     longitude = db.Column(db.Float(precision=15), nullable=False)
-    image = db.Column(db.LargeBinary, nullable=True)
+    image = db.Column(db.LargeBinary(length=200000), nullable=True)
     dishes = db.relationship('Dish', backref='restaurant', lazy=True)
 
     def add_dish(self, name, description, price, image):
@@ -90,7 +93,9 @@ class Restaurant(db.Model):
         db.session.commit()
 
     def get_data(self, with_dishes=True, with_categories=True):
-        data = {'id': self.id, 'name': self.name, 'description': self.description, 'latitude': self.latitude, 'longitude': self.longitude}
+        data = {'id': self.id, 'name': self.name, 'description': self.description,
+                'latitude': self.latitude, 'longitude': self.longitude,
+                'distance': self.get_distance(), 'likes': len([len(dish.likes) for dish in self.dishes])}
         if with_dishes:
             data['dishes'] = [dish.get_data(with_comments=False, with_categories=False) for dish in self.dishes]
         if with_categories:
@@ -99,18 +104,36 @@ class Restaurant(db.Model):
         data['image'] = image_b64
         return data
 
+    def get_distance(self):
+        print(self.latitude, self.longitude)
+        if hasattr(g, 'latitude') and hasattr(g, 'longitude'):
+            distance =  GD((g.latitude, g.longitude), (self.latitude, self.longitude)).km
+            if distance < 1:
+                return str(int(math.ceil(distance*100)/100*1000)) + 'm'
+            else:
+                return str(math.ceil(distance*10)/10) + 'km'
+        else:
+            return ""
+
 class Dish(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(100), nullable=False)
     price = db.Column(db.Float(precision=2), nullable=False)
-    image = db.Column(db.LargeBinary, nullable=True)
+    image = db.Column(db.LargeBinary(length=200000), nullable=True)
     restaurant_id = db.Column(db.Integer, db.ForeignKey('restaurant.id'), nullable=False)
     likes = db.relationship('Like', backref='dish', lazy=True)
     comments = db.relationship('Comment', backref='dish', lazy=True)
 
     def get_data(self, with_comments=True, with_categories=True):
-        data = {'id': self.id, 'name': self.name, 'description': self.description, 'price': self.price, 'restaurant': self.restaurant.name}
+        liked = False
+        if hasattr(g, 'username') and Like.query.filter_by(user=User.query.filter_by(username=g.username).first(), dish=self).first():
+            liked = True
+        data = {'id': self.id, 'name': self.name, 'description': self.description,
+                'price': self.price, 'restaurant': self.restaurant.name,
+                'distance': self.restaurant.get_distance(),
+                'liked': liked, 'likes': len(self.likes),
+                'latitude': self.restaurant.latitude, 'longitude': self.restaurant.longitude}
         if with_comments:
             data['comments'] = [comment.get_data() for comment in self.comments]
         if with_categories:
@@ -121,13 +144,16 @@ class Dish(db.Model):
         
     def like(self, username):
         user = User.query.filter_by(username=username).first()
-        if user and not Like.query.filter_by(user=user, dish=self).first():
-            like = Like(user=user, dish=self)
-            db.session.add(like)
-            db.session.commit()
-            return True
-        else:
-            return False
+        if user:
+            if Like.query.filter_by(user=user, dish=self).first():
+                Like.query.filter_by(user=user, dish=self).delete()
+                db.session.commit()
+                return False
+            else:
+                like = Like(user=user, dish=self)
+                db.session.add(like)
+                db.session.commit()
+                return True
 
     def comment(self, username, comment):
         user = User.query.filter_by(username=username).first()

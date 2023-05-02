@@ -7,7 +7,7 @@ class Config:
     # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
     #     'sqlite:///database.db'
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
-        'mysql+pymysql://root:root@localhost:3306/hambre'
+        'mysql+pymysql://root:root@mariadb:3306/hambre'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     UPLOAD_FOLDER = os.path.abspath('app/static/uploads')

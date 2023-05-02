@@ -1,8 +1,17 @@
-from flask import jsonify, request
+from flask import jsonify, request, g
 from app import app
 from app.models import Category, Dish, Restaurant, Session, User
 from app.models import db
 
+
+@app.before_request
+def save_location():
+    if request.is_json:
+        if 'latitude' in request.json and 'longitude' in request.json:
+            g.latitude = request.json['latitude']
+            g.longitude = request.json['longitude']
+        if 'username' in request.json:
+            g.username = request.json['username']
 
 @app.route('/dishes', methods=['GET'])
 def get_dishes():
@@ -56,7 +65,7 @@ def next_restaurant(session_id):
         db.session.add(session)
         db.session.commit()
     restaurant = session.next_unrelated_restaurant()
-    return jsonify(restaurant.get_data())
+    return jsonify(restaurant.get_data(with_dishes=False))
 
 @app.route('/users', methods=['POST'])
 def create_user():
@@ -83,9 +92,9 @@ def like_dish(dish_id):
     dish = Dish.query.get_or_404(dish_id)
     if dish.like(username=request.json.get('username')):
         db.session.commit()
-        return jsonify({'message': 'Dish liked successfully'}), 200
+        return jsonify({'like': 1}), 200
     else:
-        return jsonify({'error': 'Dish already liked'}), 400
+        return jsonify({'like': 0}), 200
     
 @app.route('/dishes/<int:dish_id>/comment', methods=['POST'])
 def comment_dish(dish_id):
